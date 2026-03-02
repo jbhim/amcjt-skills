@@ -162,4 +162,4 @@ node amcjt-lottery-pro/scripts/compress_image.js ./lottery.jpg ./lottery-small.j
 2. 图片建议 < 2MB，太大时先压缩
 3. 双色球 lottoType = "101"
 4. 期号格式：年份 + 3位序号（如2026020）
-5. 使用图片压缩需要安装 `npm install -g sharp`
+5. 使用图片压缩需要安装 `npm install sharp`

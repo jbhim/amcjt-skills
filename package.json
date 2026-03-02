@@ -1,0 +1,21 @@
+{
+  "name": "amcjt-skills",
+  "version": "1.0.0",
+  "description": "Skill 集合",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "iflow",
+    "cli",
+    "skills",
+    "lottery",
+    "ocr"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "sharp": "^0.33.0"
+  }
+}

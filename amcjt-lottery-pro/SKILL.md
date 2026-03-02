@@ -3,17 +3,17 @@ name: amcjt-lottery-pro
 description: 专业彩票助手 - 支持双色球开奖查询、彩票OCR识别、中奖核对、开奖提醒。触发词：彩票、双色球、开奖、中奖、lottery。
 license: MIT
 allowed-tools:
-  - Bash(npx:*)
+  - get_lottery_result
+  - ocr_lottery_ticket
+  - check_lottery_win
+  - get_lottery_countdown
+  - get_lottery_calendar
   - Bash(node:*)
-  - Read
-  - Write
-  - Exec
 metadata:
   openclaw:
     icon: "🎱"
     category: "lifestyle"
     author: "amcjt"
-    bins: ["npx", "node"]
     env: ["MOONSHOT_API_KEY"]
     os: ["darwin", "linux", "win32"]
     user-invocable: true
@@ -25,7 +25,7 @@ metadata:
 
 ## 环境要求
 
-- **依赖**: npx, node
+- **依赖**: node（用于图片压缩脚本）
 - **环境变量**: MOONSHOT_API_KEY（用于OCR识别）
 - **支持系统**: macOS, Linux, Windows
 
@@ -75,7 +75,8 @@ metadata:
 ↓
 提取期号：2026020
 ↓
-执行：npx amcjt-mcp-server get_lottery_result {"issueNo": "2026020"}
+调用工具：get_lottery_result
+  参数：{"issueNo": "2026020", "lottoType": "101"}
 ↓
 解析返回，格式化展示
 ```
@@ -89,7 +90,8 @@ metadata:
 ↓
 转为 base64
 ↓
-执行：npx amcjt-mcp-server ocr_lottery_ticket {"imageBase64": "...", "lottoType": "101"}
+调用工具：ocr_lottery_ticket
+  参数：{"imageBase64": "...", "lottoType": "101"}
 ↓
 展示识别结果，询问是否核对中奖
 ```
@@ -103,9 +105,31 @@ metadata:
 ↓
 获取期号（最新或指定）
 ↓
-执行：npx amcjt-mcp-server check_lottery_win {"issueNo": "...", "bets": [...]}
+调用工具：check_lottery_win
+  参数：{"issueNo": "...", "lottoType": "101", "bets": [{"redNumbers": [...], "blueNumbers": [...]}]}
 ↓
 展示中奖等级和奖金
+```
+
+### 流程4：获取最新开奖信息
+
+```
+用户：最新一期双色球开奖号码是什么？
+↓
+调用工具：get_lottery_result
+  参数：{"lottoType": "101"}（不指定 issueNo 获取最新）
+↓
+展示最新开奖结果
+```
+
+### 流程5：开奖倒计时查询
+
+```
+用户：下次双色球什么时候开奖？
+↓
+调用工具：get_lottery_countdown
+↓
+展示倒计时信息
 ```
 
 ## 数据格式
@@ -121,16 +145,16 @@ metadata:
 ### 红球范围：01-33（选6个）
 ### 蓝球范围：01-16（选1个）
 
-## 脚本
+## 辅助脚本
 
 ### scripts/compress_image.js
-用于压缩过大的彩票图片（>200KB）
+用于压缩过大的彩票图片（>200KB），配合 OCR 识别使用。
 
-### scripts/lottery.js
-彩票工具脚本，封装 MCP 调用：
-- `getResult(issueNo)` - 查询开奖结果
-- `ocrTicket(imagePath)` - OCR识别彩票
-- `checkWin(issueNo, bets)` - 核对中奖
+使用方法：
+```bash
+# node amcjt-lottery-pro/scripts/compress_image.js <输入路径> [输出路径]
+node amcjt-lottery-pro/scripts/compress_image.js ./lottery.jpg ./lottery-small.jpg
+```
 
 ## 注意事项
 
@@ -138,3 +162,4 @@ metadata:
 2. 图片建议 < 2MB，太大时先压缩
 3. 双色球 lottoType = "101"
 4. 期号格式：年份 + 3位序号（如2026020）
+5. 使用图片压缩需要安装 `npm install -g sharp`

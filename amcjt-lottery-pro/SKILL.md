@@ -11,7 +11,7 @@ allowed-tools:
   - Bash(node:*)
 metadata:
   openclaw:
-    icon: "🎱"
+    icon: "🏆"
     category: "lifestyle"
     author: "amcjt"
     env: ["MOONSHOT_API_KEY"]

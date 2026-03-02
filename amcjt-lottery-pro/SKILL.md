@@ -14,7 +14,11 @@ metadata:
     icon: "🏆"
     category: "lifestyle"
     author: "amcjt"
-    env: ["MOONSHOT_API_KEY"]
+    requires:          # ✅ 修正：添加 requires 层级
+      env: ["MOONSHOT_API_KEY"]  # ✅ 修正：移到 requires 下
+      bins: ["node"]  # ✅ 建议添加：声明需要 node 环境
+    primaryEnv: "MOONSHOT_API_KEY"  # ✅ 新增：声明主要环境变量
+    primaryCredential: "MOONSHOT_API_KEY"  # ✅ 新增：声明主要凭据
     os: ["darwin", "linux", "win32"]
     user-invocable: true
 ---

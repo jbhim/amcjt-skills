@@ -9,29 +9,33 @@ allowed-tools:
   - get_lottery_countdown
   - get_lottery_calendar
   - Bash(node:*)
+  - Bash(npx:*)
 metadata:
   openclaw:
     icon: "🏆"
     category: "lifestyle"
     author: "amcjt"
-    requires:          # ✅ 修正：添加 requires 层级
-      env: ["MOONSHOT_API_KEY"]  # ✅ 修正：移到 requires 下
-      bins: ["node"]  # ✅ 建议添加：声明需要 node 环境
-    primaryEnv: "MOONSHOT_API_KEY"  # ✅ 新增：声明主要环境变量
-    primaryCredential: "MOONSHOT_API_KEY"  # ✅ 新增：声明主要凭据
+    bins: ["node"]
     os: ["darwin", "linux", "win32"]
     user-invocable: true
 ---
 
 # 专业彩票助手
 
+> ⚠️ **重要前提**：本技能依赖 **OpenClaw 内置的 mcporter 技能** 来调用 MCP 工具。使用前请确保：
+> 1. 已启用 mcporter 技能
+> 2. mcporter 已配置并注册 **amcjt-mcp-server**
+
 集成 amcjt-mcp-server 提供的彩票服务，支持双色球相关操作。
 
 ## 环境要求
 
-- **依赖**: node（用于图片压缩脚本）
-- **环境变量**: MOONSHOT_API_KEY（用于OCR识别）
-- **支持系统**: macOS, Linux, Windows
+### 必需依赖
+- **OpenClaw mcporter 技能**: 用于调用 MCP 工具（请确保已启用并配置 amcjt-mcp-server）
+- **Node.js**: 用于图片压缩脚本
+
+### 支持系统
+- macOS, Linux, Windows
 
 ## 触发条件
 
@@ -42,13 +46,15 @@ metadata:
 
 ## 核心功能
 
+> 💡 **工具调用方式**：以下所有 MCP 工具均通过 **mcporter 技能** 调用，确保 mcporter 已正确配置 amcjt-mcp-server。
+
 ### 1. 查询开奖结果
 
 用户询问某期开奖号码时：
 
 1. 提取期号（格式：YYYY + 3位序号，如 2026020）
 2. 如未提供期号，查询最新一期
-3. 调用 `get_lottery_result` 获取结果
+3. 通过 mcporter 调用 `get_lottery_result` MCP 工具获取结果
 4. 展示：开奖日期、红球号码（6个）、蓝球号码（1个）、奖池金额、中奖注数
 
 ### 2. 彩票OCR识别
@@ -58,7 +64,7 @@ metadata:
 1. 读取图片文件
 2. 如图片 > 200KB，先用脚本压缩
 3. 转为 base64 格式
-4. 调用 `ocr_lottery_ticket` 识别号码
+4. 通过 mcporter 调用 `ocr_lottery_ticket` MCP 工具识别号码
 5. 展示识别的红球和蓝球号码
 
 ### 3. 中奖核对
@@ -67,7 +73,7 @@ metadata:
 
 1. 获取期号（用户输入或查询最新）
 2. 获取投注号码（6个红球 01-33，1个蓝球 01-16）
-3. 调用 `check_lottery_win` 核对
+3. 通过 mcporter 调用 `check_lottery_win` MCP 工具核对
 4. 展示中奖等级和奖金
 
 ## 工作流程
@@ -79,7 +85,7 @@ metadata:
 ↓
 提取期号：2026020
 ↓
-调用工具：get_lottery_result
+通过 mcporter 调用 MCP 工具：get_lottery_result
   参数：{"issueNo": "2026020", "lottoType": "101"}
 ↓
 解析返回，格式化展示
@@ -94,7 +100,7 @@ metadata:
 ↓
 转为 base64
 ↓
-调用工具：ocr_lottery_ticket
+通过 mcporter 调用 MCP 工具：ocr_lottery_ticket
   参数：{"imageBase64": "...", "lottoType": "101"}
 ↓
 展示识别结果，询问是否核对中奖
@@ -109,7 +115,7 @@ metadata:
 ↓
 获取期号（最新或指定）
 ↓
-调用工具：check_lottery_win
+通过 mcporter 调用 MCP 工具：check_lottery_win
   参数：{"issueNo": "...", "lottoType": "101", "bets": [{"redNumbers": [...], "blueNumbers": [...]}]}
 ↓
 展示中奖等级和奖金
@@ -120,7 +126,7 @@ metadata:
 ```
 用户：最新一期双色球开奖号码是什么？
 ↓
-调用工具：get_lottery_result
+通过 mcporter 调用 MCP 工具：get_lottery_result
   参数：{"lottoType": "101"}（不指定 issueNo 获取最新）
 ↓
 展示最新开奖结果
@@ -131,7 +137,7 @@ metadata:
 ```
 用户：下次双色球什么时候开奖？
 ↓
-调用工具：get_lottery_countdown
+通过 mcporter 调用 MCP 工具：get_lottery_countdown
 ↓
 展示倒计时信息
 ```
@@ -162,7 +168,7 @@ node amcjt-lottery-pro/scripts/compress_image.js ./lottery.jpg ./lottery-small.j
 
 ## 注意事项
 
-1. OCR 需要 MOONSHOT_API_KEY 环境变量
+1. **mcporter 配置**: 使用前请确保 OpenClaw 的 mcporter 技能已启用，且已注册 amcjt-mcp-server
 2. 图片建议 < 2MB，太大时先压缩
 3. 双色球 lottoType = "101"
 4. 期号格式：年份 + 3位序号（如2026020）

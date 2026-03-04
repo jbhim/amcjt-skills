@@ -2,7 +2,7 @@
 
 ## 项目概述
 
-本项目是一个 **Skill 集合**，用于扩展 AI 的功能。当前包含一个专业彩票助手技能（`amcjt-lottery-pro`），支持双色球开奖查询、彩票 OCR 识别、中奖核对、开奖倒计时等功能。
+本项目是一个 **Skill 集合**，用于扩展 AI 的功能。当前包含一个专业彩票助手技能（`amcjt-lottery`），支持双色球开奖查询、彩票 OCR 识别、中奖核对、开奖倒计时等功能。
 
 ### 项目结构
 
@@ -15,13 +15,15 @@ amcjt-skills/
 ├── package-lock.json       # 依赖锁定文件
 ├── node_modules/           # 依赖目录（已忽略）
 ├── .idea/                  # IntelliJ IDEA 配置（已忽略）
-└── amcjt-lottery-pro/      # 彩票助手 Skill
+├── lottery.jpg             # 示例彩票图片（可选）
+├── lottery-small.jpg       # 压缩后的示例图片（可选）
+└── amcjt-lottery/          # 彩票助手 Skill
     └── SKILL.md            # Skill 定义和说明文档
 ```
 
 ---
 
-## amcjt-lottery-pro Skill
+## amcjt-lottery Skill
 
 ### 功能介绍
 
@@ -204,6 +206,35 @@ MOONSHOT_API_KEY=your-key mcporter call amcjt-mcp-server.ocr_lottery_ticket ...
 - 项目根目录使用 `package.json` 管理 Node.js 依赖
 - 遵循 OpenClaw Skill 规范定义触发条件和允许的工具
 
+### Skill 定义规范
+
+`SKILL.md` 文件使用 YAML Front Matter 格式：
+
+```yaml
+---
+name: amcjt-lottery                          # Skill 唯一标识
+description: 专业彩票助手 - 支持...           # 功能描述和触发词
+license: MIT
+allowed-tools:                               # 允许调用的工具列表
+  - get_lottery_result
+  - ocr_lottery_ticket
+  - check_lottery_win
+  - get_lottery_countdown
+  - get_lottery_calendar
+  - Bash(node:*)
+  - Bash(npx:*)
+  - Bash(mcporter:*)
+metadata:
+  openclaw:
+    icon: "🏆"                               # Skill 图标
+    category: "lifestyle"                   # 分类
+    author: "amcjt"                         # 作者
+    bins: ["node", "mcporter"]              # 所需二进制工具
+    os: ["darwin", "linux", "win32"]        # 支持的操作系统
+    user-invocable: true                    # 用户是否可直接调用
+---
+```
+
 ### 代码风格
 
 - Skill 定义使用 YAML Front Matter 格式
@@ -231,7 +262,7 @@ MOONSHOT_API_KEY=your-key mcporter call amcjt-mcp-server.ocr_lottery_ticket ...
 
 如需添加新的 Skill：
 
-1. 创建新的 Skill 目录（如 `amcjt-xxx-pro/`）
+1. 创建新的 Skill 目录（如 `amcjt-xxx/`）
 2. 在该目录下创建 `SKILL.md` 定义 Skill 元数据和功能
 3. 在 `SKILL.md` 中指定：
    - `name`: Skill 唯一标识
@@ -245,7 +276,7 @@ MOONSHOT_API_KEY=your-key mcporter call amcjt-mcp-server.ocr_lottery_ticket ...
 
 ## 相关资源
 
-- **Skill 定义**: `amcjt-lottery-pro/SKILL.md`
+- **Skill 定义**: `amcjt-lottery/SKILL.md`
 - **依赖配置**: `package.json`
 - **mcporter npm 包**: https://www.npmjs.com/package/mcporter
 - **Model Context Protocol 规范**: https://github.com/modelcontextprotocol/specification
@@ -255,9 +286,10 @@ MOONSHOT_API_KEY=your-key mcporter call amcjt-mcp-server.ocr_lottery_ticket ...
 ## 更新日志
 
 ### 2026-03-04
-- 更新 SKILL.md，改为通过 OpenClaw 内置 mcporter 技能调用 MCP 工具
-- 移除 `amcjt-lottery-pro/scripts/compress_image.js` 脚本
-- 更新 AGENTS.md，移除 scripts 目录引用，优化 mcporter 使用说明
+- 更新 Skill 目录名：`amcjt-lottery-pro` → `amcjt-lottery`
+- 移除 scripts 目录和相关说明（图片压缩功能已移除）
+- 更新 AGENTS.md，优化 mcporter 使用说明
+- 添加 Skill 定义规范说明（YAML Front Matter 格式）
 - 添加 mcporter 故障排除指南
 
 ### 2026-03-02

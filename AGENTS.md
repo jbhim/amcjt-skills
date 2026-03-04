@@ -2,7 +2,7 @@
 
 ## 项目概述
 
-本项目是一个 **Skill 集合**，用于扩展ai的功能。当前包含一个专业彩票助手技能（`amcjt-lottery-pro`），支持双色球开奖查询、彩票OCR识别、中奖核对、开奖倒计时等功能。
+本项目是一个 **Skill 集合**，用于扩展 AI 的功能。当前包含一个专业彩票助手技能（`amcjt-lottery-pro`），支持双色球开奖查询、彩票 OCR 识别、中奖核对、开奖倒计时等功能。
 
 ### 项目结构
 
@@ -16,9 +16,7 @@ amcjt-skills/
 ├── node_modules/           # 依赖目录（已忽略）
 ├── .idea/                  # IntelliJ IDEA 配置（已忽略）
 └── amcjt-lottery-pro/      # 彩票助手 Skill
-    ├── SKILL.md            # Skill 定义和说明文档
-    └── scripts/            # 辅助脚本
-        └── compress_image.js   # 图片压缩脚本
+    └── SKILL.md            # Skill 定义和说明文档
 ```
 
 ---
@@ -27,13 +25,13 @@ amcjt-skills/
 
 ### 功能介绍
 
-专业彩票助手，集成 `amcjt-mcp-server` 提供的彩票服务，支持以下功能：
+专业彩票助手，通过 **OpenClaw 内置的 mcporter 技能** 调用 MCP 工具，集成 `amcjt-mcp-server` 提供的彩票服务，支持以下功能：
 
 1. **查询开奖结果** - 查询指定或最新期号的双色球开奖号码
-2. **彩票OCR识别** - 识别彩票图片中的红球和蓝球号码
+2. **彩票 OCR 识别** - 识别彩票图片中的红球和蓝球号码
 3. **中奖核对** - 核对投注号码是否中奖及中奖等级
 4. **开奖倒计时** - 查询距离下次开奖的时间
-5. **开奖日历** - 获取未来7天的开奖日历
+5. **开奖日历** - 获取未来 7 天的开奖日历
 
 ### 触发关键词
 
@@ -44,47 +42,79 @@ amcjt-skills/
 
 ### 环境要求
 
-- **依赖**: node（用于图片压缩脚本）
-- **环境变量**: `MOONSHOT_API_KEY`（用于OCR识别）
+- **OpenClaw mcporter 技能**: 用于调用 MCP 工具（请确保已启用并配置 amcjt-mcp-server）
 - **支持系统**: macOS, Linux, Windows
 
-### 依赖安装
+> ⚠️ **重要前提**：本技能依赖 **OpenClaw 内置的 mcporter 技能** 来调用 MCP 工具。使用前请确保：
+> 1. 已启用 mcporter 技能
+> 2. mcporter 已配置并注册 **amcjt-mcp-server**
 
+### mcporter 配置
+
+本 Skill 依赖 [mcporter](https://www.npmjs.com/package/mcporter) 调用 MCP 工具。
+
+**安装 mcporter：**
 ```bash
-# 安装 sharp 图片处理库（用于 compress_image.js）
-npm install
+npm install -g mcporter
+# 或使用 npx（无需安装）
+mcporter --help
 ```
 
-### 脚本使用
-
-#### compress_image.js - 图片压缩脚本
-
-```bash
-# 压缩彩票图片（目标 < 200KB 适合OCR上传）
-# node amcjt-lottery-pro/scripts/compress_image.js <输入路径> [输出路径]
-
-# 示例
-node amcjt-lottery-pro/scripts/compress_image.js ./lottery.jpg ./lottery-small.jpg
+**配置示例** (`config/mcporter.json`)：
+```json
+{
+  "mcpServers": {
+    "amcjt-mcp-server": {
+      "description": "AMCJT 彩票 MCP 服务器",
+      "command": "npx",
+      "args": ["-y", "amcjt-mcp-server@latest"],
+      "env": {
+        "MOONSHOT_API_KEY": "${MOONSHOT_API_KEY}"
+      }
+    }
+  }
+}
 ```
 
-**功能特点：**
-- 自动检测文件大小，小于 200KB 直接复制
-- 智能压缩策略：根据目标大小自动调整质量和尺寸
-- 支持多格式：JPEG、PNG、WebP、GIF、TIFF、AVIF
-- 超大图片自动缩小尺寸（最大 2048px）
-- 支持二次压缩确保达到目标大小
+**验证配置：**
+```bash
+# 列出已配置的 MCP 服务器
+mcporter list
+
+# 查看彩票服务器的工具列表
+mcporter list amcjt-mcp-server
+
+# 查看详细配置
+mcporter list --verbose
+```
 
 ### MCP 工具调用
 
-Skill 直接调用以下 MCP 工具：
+本 Skill 通过 mcporter 调用以下 MCP 工具：
 
-| 工具名 | 功能 | 参数 |
-|--------|------|------|
-| `get_lottery_result` | 查询开奖结果 | `issueNo`, `lottoType` |
-| `ocr_lottery_ticket` | OCR识别彩票 | `imageBase64`, `lottoType` |
-| `check_lottery_win` | 核对中奖 | `issueNo`, `bets`, `lottoType` |
-| `get_lottery_countdown` | 开奖倒计时 | 无 |
-| `get_lottery_calendar` | 开奖日历 | 无 |
+| 工具名 | 功能 | 参数 | mcporter 调用示例 |
+|--------|------|------|-------------------|
+| `get_lottery_result` | 查询开奖结果 | `issueNo`, `lottoType` | `mcporter call 'amcjt-mcp-server.get_lottery_result(issueNo: "2026020", lottoType: "101")'` |
+| `ocr_lottery_ticket` | OCR 识别彩票 | `image`, `lottoType` | `mcporter call 'amcjt-mcp-server.ocr_lottery_ticket(image: "/path/to/lottery.jpg", lottoType: "101")'` |
+| `check_lottery_win` | 核对中奖 | `issueNo`, `bets`, `lottoType` | `mcporter call 'amcjt-mcp-server.check_lottery_win(issueNo: "2026020", lottoType: "101", bets: [...])'` |
+| `get_lottery_countdown` | 开奖倒计时 | 无 | `mcporter call amcjt-mcp-server.get_lottery_countdown` |
+| `get_lottery_calendar` | 开奖日历 | 无 | `mcporter call amcjt-mcp-server.get_lottery_calendar` |
+
+**mcporter 调用语法：**
+
+```bash
+# 1. 函数调用语法（推荐，避免参数类型问题）
+mcporter call 'amcjt-mcp-server.get_lottery_result(issueNo: "2026020", lottoType: "101")'
+
+# 2. 冒号分隔参数（shell 友好）
+mcporter call amcjt-mcp-server.get_lottery_result issueNo:2026020 lottoType:101
+
+# 3. 简写形式（自动推断 call 命令）
+mcporter amcjt-mcp-server.get_lottery_result lottoType:101
+
+# 4. 输出 JSON 格式
+mcporter call amcjt-mcp-server.get_lottery_result lottoType:101 --output json
+```
 
 ### 数据格式
 
@@ -97,10 +127,72 @@ Skill 直接调用以下 MCP 工具：
 }
 ```
 
-- **红球范围**: 01-33（选6个）
-- **蓝球范围**: 01-16（选1个）
-- **期号格式**: 年份 + 3位序号（如 2026020）
-- **双色球 lottoType**: "101"
+- **红球范围**: 01-33（选 6 个）
+- **蓝球范围**: 01-16（选 1 个）
+- **期号格式**: 年份 + 3 位序号（如 2026020）
+- **双色球 lottoType**: "101"（字符串类型）
+
+### mcporter 故障排除
+
+#### 1. 检查 mcporter 安装
+
+```bash
+# 验证 mcporter 是否安装
+mcporter --version
+
+# 查看帮助
+mcporter --help
+```
+
+#### 2. 检查 MCP 服务器配置
+
+```bash
+# 列出所有已配置的 MCP 服务器
+mcporter list
+
+# 查看特定服务器的详细信息
+mcporter list amcjt-mcp-server --schema
+
+# 查看配置来源
+mcporter list --verbose
+```
+
+#### 3. 测试工具调用
+
+```bash
+# 测试连接
+mcporter call amcjt-mcp-server.get_lottery_countdown --output json
+
+# 查看详细日志
+mcporter call amcjt-mcp-server.get_lottery_countdown --log-level debug
+```
+
+#### 4. 配置问题排查
+
+```bash
+# 查看当前使用的配置文件路径
+mcporter config list
+
+# 添加/修改配置
+mcporter config add test-mcp https://your-mcp-server-url.com/mcp
+
+# 导入其他编辑器的配置（Cursor、Claude、VS Code 等）
+mcporter config import cursor --copy
+```
+
+#### 5. 环境变量未生效
+
+如果使用 `${ENV_VAR}` 语法但变量未生效：
+
+```bash
+# 检查环境变量是否设置
+echo $MOONSHOT_API_KEY  # Linux/Mac
+# 或
+echo %MOONSHOT_API_KEY%  # Windows
+
+# 直接在命令行传递（覆盖配置文件）
+MOONSHOT_API_KEY=your-key mcporter call amcjt-mcp-server.ocr_lottery_ticket ...
+```
 
 ---
 
@@ -109,16 +201,15 @@ Skill 直接调用以下 MCP 工具：
 ### 文件组织
 
 - Skill 目录使用 `SKILL.md` 定义元数据和功能说明
-- 辅助脚本放在 `scripts/` 子目录中
-- 脚本需包含详细的使用说明注释
 - 项目根目录使用 `package.json` 管理 Node.js 依赖
+- 遵循 OpenClaw Skill 规范定义触发条件和允许的工具
 
 ### 代码风格
 
-- 使用 JavaScript (Node.js) 编写脚本
-- 包含详细的 JSDoc/注释说明
-- 提供清晰的错误处理和用户提示
-- 使用异步/await 处理异步操作
+- Skill 定义使用 YAML Front Matter 格式
+- 包含详细的文档说明和使用示例
+- 提供清晰的故障排除指南
+- 使用中文编写用户-facing 文档
 
 ### 忽略规则
 
@@ -142,7 +233,11 @@ Skill 直接调用以下 MCP 工具：
 
 1. 创建新的 Skill 目录（如 `amcjt-xxx-pro/`）
 2. 在该目录下创建 `SKILL.md` 定义 Skill 元数据和功能
-3. 如有需要，创建 `scripts/` 目录存放辅助脚本
+3. 在 `SKILL.md` 中指定：
+   - `name`: Skill 唯一标识
+   - `description`: 功能描述和触发词
+   - `allowed-tools`: 允许调用的工具列表
+   - `metadata`: OpenClaw 相关配置（icon、category、author 等）
 4. 如需新增依赖，更新根目录 `package.json`
 5. 更新本 `AGENTS.md` 文件添加新 Skill 的说明
 
@@ -151,12 +246,19 @@ Skill 直接调用以下 MCP 工具：
 ## 相关资源
 
 - **Skill 定义**: `amcjt-lottery-pro/SKILL.md`
-- **图片压缩脚本**: `amcjt-lottery-pro/scripts/compress_image.js`
 - **依赖配置**: `package.json`
+- **mcporter npm 包**: https://www.npmjs.com/package/mcporter
+- **Model Context Protocol 规范**: https://github.com/modelcontextprotocol/specification
 
 ---
 
 ## 更新日志
+
+### 2026-03-04
+- 更新 SKILL.md，改为通过 OpenClaw 内置 mcporter 技能调用 MCP 工具
+- 移除 `amcjt-lottery-pro/scripts/compress_image.js` 脚本
+- 更新 AGENTS.md，移除 scripts 目录引用，优化 mcporter 使用说明
+- 添加 mcporter 故障排除指南
 
 ### 2026-03-02
 - 移除 `lottery.js` 脚本，改为直接调用 MCP 工具
